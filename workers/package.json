@@ -1,0 +1,24 @@
+{
+  "name": "workers",
+  "version": "1.0.0",
+  "description": "Background worker: consumes the BullMQ email queue and calls the email service over HTTP",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon --watch src src/index.js",
+    "test": "jest --runInBand"
+  },
+  "keywords": ["bullmq", "redis", "workers"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bullmq": "^5.34.0",
+    "dotenv": "^16.4.7",
+    "ioredis": "^5.4.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9"
+  }
+}

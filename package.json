@@ -1,0 +1,17 @@
+{
+  "name": "solar-capstone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Solar Capstone backend: main app (auth), email service and background worker",
+  "scripts": {
+    "dev": "concurrently -n main,email,workers -c blue,green,magenta \"npm run dev --prefix main-app\" \"npm run dev --prefix email-service\" \"npm run dev --prefix workers\"",
+    "install:all": "npm install && npm install --prefix main-app && npm install --prefix email-service && npm install --prefix workers",
+    "test": "npm test --prefix main-app && npm test --prefix email-service && npm test --prefix workers",
+    "db:migrate": "npm run db:migrate --prefix main-app && npm run db:migrate --prefix email-service",
+    "lint": "npm run lint --prefix main-app && npm run lint --prefix email-service",
+    "format": "npm run format --prefix main-app && npm run format --prefix email-service"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
