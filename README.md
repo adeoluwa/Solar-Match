@@ -129,6 +129,12 @@ npm test
 
 Or one service at a time, e.g. `npm test --prefix main-app`.
 
+## Contributing
+
+Commit messages follow **Conventional Commits** — see [docs/COMMIT_CONVENTION.md](docs/COMMIT_CONVENTION.md)
+(e.g. `feat: add admin seeding`, `fix(auth): enforce login role toggle`).
+Branch off `development` and open pull requests into it, not `main`.
+
 ## Notes
 
 - `main-app` and `email-service` use **separate** Postgres databases (set independently in each `.env`). They can share one instance using two database names.
