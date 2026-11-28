@@ -3,9 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "description": "Main application: user auth (register, login, password reset) over a modular-monolith structure",
-  "keywords": ["monolith", "modular-monolith", "API", "sequelize", "swagger"],
+  "keywords": [
+    "monolith",
+    "modular-monolith",
+    "API",
+    "sequelize",
+    "swagger"
+  ],
   "license": "ISC",
-  "authors": ["Joseph Adeoluwa Odamo"],
+  "authors": [
+    "Joseph Adeoluwa Odamo",
+    "Kemka Ofoha"
+  ],
   "type": "commonjs",
   "main": "src/server.js",
   "engines": {
@@ -21,12 +30,15 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.js\"",
     "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:status": "sequelize-cli db:migrate:status",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
     "db:seed": "sequelize-cli db:seed:all",
     "db:seed:undo": "sequelize-cli db:seed:undo:all"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1179.0",
+    "@aws-sdk/s3-request-presigner": "^3.1179.0",
     "bcryptjs": "^3.0.2",
     "bullmq": "^5.34.0",
     "cors": "^2.8.5",
@@ -37,6 +49,7 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.5.0",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.5",

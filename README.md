@@ -24,6 +24,7 @@ A **modular monolith** with two supporting services, built for user authenticati
 | Auth        | JWT (`jsonwebtoken`) + `bcryptjs`                        |
 | Background  | BullMQ + Redis (`ioredis`)                               |
 | Email       | Resend                                                   |
+| File storage| Filebase (S3-compatible) via AWS SDK v3 + `multer`       |
 | API docs    | Swagger / OpenAPI 3 (`/api-docs`)                        |
 | Tests       | Jest + Supertest                                         |
 
@@ -49,6 +50,25 @@ Email is **globally unique** (one account per email). Login enforces the toggle:
 
 **Login body:** `email`, `password`, `role` (`customer`\|`installer`).
 
+## Installer verification (`main-app`, prefix `/api/v1`)
+
+Installers submit a **business profile** plus **verification documents** (PDF only, max 5 MB each) for manual admin review before earning a verified badge. Files are stored in Filebase; the DB keeps only the object key, and a short-lived **presigned URL** is minted on read. Allowed statuses/document types live in app-layer constants ([`installerVerification.js`](main-app/src/shared/constants/installerVerification.js)) — the columns are plain strings, not Postgres enums.
+
+Status lifecycle: `pending → inReview → verified | rejected` (a rejected installer can fix documents and resubmit).
+
+| Method | Path                                | Role      | Purpose                                    |
+| ------ | ----------------------------------- | --------- | ------------------------------------------ |
+| POST   | `/installers/profile`               | installer | Create or update the business profile      |
+| GET    | `/installers/profile`               | installer | Own profile + documents (presigned URLs)   |
+| POST   | `/installers/documents`             | installer | Upload PDFs (one field per document type)  |
+| DELETE | `/installers/documents/:documentId` | installer | Remove a document                          |
+| POST   | `/installers/submit`                | installer | Submit for review (needs required docs)    |
+| GET    | `/admin/installers?status=inReview` | admin     | Review queue (filter by status)            |
+| GET    | `/admin/installers/:id`             | admin     | One submission + applicant + documents     |
+| PATCH  | `/admin/installers/:id/review`      | admin     | Approve or reject (with `rejectionReason`) |
+
+**Required documents to submit:** government ID, proof of address, training certificate, evidence of previous projects — plus a CAC certificate when `isRegisteredBusiness` is `true`. Optional: TIN, professional membership, manufacturer authorisation, customer reference.
+
 > **Prerequisites:** Node.js 20+, a PostgreSQL database, and a running Redis
 > (e.g. `docker run -p 6379:6379 redis`).
 
@@ -73,7 +93,7 @@ npm run install:all
 
 Copy each `.env.example` to `.env` and fill in the blanks:
 
-- **`main-app/.env`** — `DATABASE_URL` (Postgres), `JWT_SECRET`, `REDIS_URL`, `CLIENT_URL`
+- **`main-app/.env`** — `DATABASE_URL` (Postgres), `JWT_SECRET`, `REDIS_URL`, `CLIENT_URL`, and for installer document uploads `FILEBASE_ACCESS_TOKEN` / `FILEBASE_SECRET_KEY` / `FILEBASE_BUCKET`
 - **`email-service/.env`** — `DATABASE_URL`, `RESEND_API_KEY`, `INTERNAL_API_KEY`
 - **`workers/.env`** — `REDIS_URL`, `EMAIL_SERVICE_URL`, `INTERNAL_API_KEY`
 
@@ -86,10 +106,10 @@ Copy each `.env.example` to `.env` and fill in the blanks:
 
 ### 3. Run migrations
 
-Creates the `users` and `email_logs` tables (set `DATABASE_URL` in both services first):
+Creates the `main-app` tables (`users`, `installer_profiles`, `installer_documents`) and the `email-service` table (`email_logs`). Set `DATABASE_URL` in both services first:
 
 ```bash
-npm run db:migrate --prefix main-app         # creates "users"
+npm run db:migrate --prefix main-app         # creates "users", "installer_profiles", "installer_documents"
 npm run db:migrate --prefix email-service    # creates "email_logs"
 ```
 
@@ -97,6 +117,14 @@ Or both at once from root:
 
 ```bash
 npm run db:migrate
+```
+
+**Inspect / roll back** (from root; each runs across both services, or add `--prefix main-app` for just one):
+
+```bash
+npm run db:migrate:status      # show which migrations have run
+npm run db:migrate:undo        # roll back the most recent migration
+npm run db:migrate:undo:all    # roll back every migration
 ```
 
 Then seed the admin account (reads `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_FULLNAME` from `main-app/.env`):

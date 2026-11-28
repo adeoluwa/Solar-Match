@@ -8,10 +8,17 @@
     "install:all": "npm install && npm install --prefix main-app && npm install --prefix email-service && npm install --prefix workers",
     "test": "npm test --prefix main-app && npm test --prefix email-service && npm test --prefix workers",
     "db:migrate": "npm run db:migrate --prefix main-app && npm run db:migrate --prefix email-service",
+    "db:migrate:status": "npm run db:migrate:status --prefix main-app && npm run db:migrate:status --prefix email-service",
+    "db:migrate:undo": "npm run db:migrate:undo --prefix main-app && npm run db:migrate:undo --prefix email-service",
+    "db:migrate:undo:all": "npm run db:migrate:undo:all --prefix main-app && npm run db:migrate:undo:all --prefix email-service",
     "lint": "npm run lint --prefix main-app && npm run lint --prefix email-service",
     "format": "npm run format --prefix main-app && npm run format --prefix email-service"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1179.0",
+    "@aws-sdk/s3-request-presigner": "^3.1179.0"
   }
 }

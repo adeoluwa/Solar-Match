@@ -44,6 +44,17 @@ function errorHandler(err, req, res, _next) {
     error = new AppError("Request body is not valid JSON", 400);
   }
 
+  // multer upload errors (file too large, too many files, unexpected field)
+  if (err.name === "MulterError") {
+    const message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "File is too large (max 5 MB)"
+        : err.code === "LIMIT_UNEXPECTED_FILE"
+          ? "Unexpected file field: use one field per document type (e.g. government_id), one file each"
+          : "File upload failed";
+    error = new AppError(message, 400);
+  }
+
   const statusCode = error.statusCode || 500;
   const isServerError = statusCode >= 500;
 
